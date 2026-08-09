@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #003625;
+  --color-primary-light: #a4fbe0;
+  --color-primary-dark: #051d16;
+
+  --color-secondary: #e26e00;
+  --color-secondary-very-light: #fff4ea;
+  --color-secondary-light: #fda106;
+  --color-secondary-dark: #a25205;
+  --color-surface: #f6fbf9;
+  --color-ink: #052319;
+
+  --font-sans: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+@layer base {
+  body {
+    min-height: 100vh;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font-family: var(--font-sans);
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
