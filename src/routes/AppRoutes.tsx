@@ -11,6 +11,10 @@ import Login from "../features/auth/views/Login";
 import HubAdminLayout from "../layouts/HubAdminLayout";
 import HubDashboard from "../features/dashboard/views/HubDashboard";
 import Unauthorized from "../features/error/views/Unauthorized";
+import UsersList from "../features/users/views/UsersList";
+import UserDetails from "../features/users/views/UserDetails";
+import ShopsList from "../features/shops/views/ShopsList";
+import ShopDetails from "../features/shops/views/ShopDetails";
 
 export const appRoutes = createBrowserRouter([
   {
@@ -29,7 +33,13 @@ export const appRoutes = createBrowserRouter([
           {
             path: "/",
             element: <RootLayout />,
-            children: [{ index: true, element: <Dashboard /> }],
+            children: [
+              { index: true, element: <Dashboard /> },
+              { path: "users", element: <UsersList /> },
+              { path: "users/:uid", element: <UserDetails /> },
+              { path: "shops", element: <ShopsList /> },
+              { path: "shops/:shopId", element: <ShopDetails /> },
+            ],
           },
         ],
       },

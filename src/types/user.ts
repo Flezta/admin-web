@@ -84,4 +84,10 @@ export interface User {
   disabledBy?: string;
 
   expiresAt?: Date;
+  authActivity?: {
+    lastSignInTime?: string;
+    creationTime?: string;
+    providerData?: string;
+    lastRefreshTime?: string;
+  };
 }

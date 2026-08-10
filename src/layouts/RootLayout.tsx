@@ -1,13 +1,31 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet } from "react-router-dom";
+import AdminShell from "./components/AdminShell";
 
 export default function RootLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* e.g. <Navbar /> */}
-      <main className="flex-1">
+    <AdminShell
+      title="Marketplace Control"
+      navItems={[
+        { name: "Dashboard", to: "/" },
+        { name: "Users", to: "/users" },
+        { name: "Shops", to: "/shops" },
+      ]}
+      apiDomains={[
+        { name: "Users" },
+        { name: "Shops" },
+        { name: "Products" },
+        { name: "Categories" },
+        { name: "Brands" },
+        { name: "Orders" },
+        { name: "Moderation" },
+        { name: "Payouts" },
+        { name: "Notifications" },
+        { name: "Help Center" },
+      ]}
+    >
+      <main>
         <Outlet />
       </main>
-      {/* e.g. <Footer /> */}
-    </div>
-  )
+    </AdminShell>
+  );
 }
