@@ -17,97 +17,23 @@ import {
   useUpdateShopStatusMutation,
   useUpdateShopVerificationStatusMutation,
 } from "../../../store/api/shopsApi";
+import SectionCard from "../../../lib/components/SectionCard";
+import ControlIcon from "../../../lib/icons/ControlIcon";
+import StatCard from "../../../lib/components/StatCard";
+import Badge from "../../../lib/components/Badge";
+import {
+  formatDate,
+  formatMoney,
+  getErrorMessage,
+} from "../../../lib/utils/helpers";
+import ControlGroup from "../../../lib/components/ControlGroup";
+import ShopDetailsSkeleton from "../components/ShopDetailsSkeleton";
+import RevenueTile from "../components/RevenueTile";
+import RevenueTable from "../components/RevenueTable";
 
 type ConfirmAction =
   | { kind: "status"; value: ShopStatus }
   | { kind: "verification"; value: ShopVerificationStatus };
-type Tone = "neutral" | "success" | "warning" | "danger";
-
-function formatDate(value?: string) {
-  if (!value) return "-";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleString();
-}
-
-function formatMoney(value: number, currency = "NGN") {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
-
-function getErrorMessage(error: unknown) {
-  return (error as { message?: string } | undefined)?.message;
-}
-
-function SectionCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-3xl border border-primary/10 bg-white p-4 shadow-[0_14px_30px_-24px_rgba(0,54,37,0.28)]">
-      <h2 className="text-base font-semibold text-primary">{title}</h2>
-      {description ? (
-        <p className="mt-1 text-sm text-primary/65">{description}</p>
-      ) : null}
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
-      <p className="text-xs uppercase tracking-[0.14em] text-primary/55">
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-bold tracking-tight text-primary">
-        {value}
-      </p>
-      <p className="mt-1 text-xs text-primary/60">{hint}</p>
-    </div>
-  );
-}
-
-function Badge({
-  children,
-  tone = "neutral",
-}: {
-  children: React.ReactNode;
-  tone?: "neutral" | "success" | "warning" | "danger";
-}) {
-  const toneClass =
-    tone === "success"
-      ? "border-green-200 bg-green-50 text-green-700"
-      : tone === "warning"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : tone === "danger"
-          ? "border-red-200 bg-red-50 text-red-700"
-          : "border-primary/20 bg-primary/5 text-primary/70";
-
-  return (
-    <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.08em] ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
-}
 
 function KeyValue({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -137,77 +63,6 @@ function verificationTone(status?: ShopVerificationStatus) {
 function statusLabel(status?: string) {
   if (!status) return "Unknown";
   return status.replaceAll("_", " ").toLowerCase();
-}
-
-function ControlIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <path d="M4 6h11M4 12h7M4 18h11M17 4v4M17 16v4" strokeLinecap="round" />
-      <circle cx="17" cy="8" r="2" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="14" r="2" fill="currentColor" stroke="none" />
-      <circle cx="17" cy="20" r="2" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-const TONE_RING: Record<Tone, string> = {
-  success: "ring-green-300",
-  warning: "ring-amber-300",
-  danger: "ring-red-300",
-  neutral: "ring-primary/30",
-};
-
-function ControlGroup<T extends string>({
-  label,
-  options,
-  activeValue,
-  busyValue,
-  disabled,
-  onSelect,
-  toneFor,
-}: {
-  label: string;
-  options: T[];
-  activeValue?: T;
-  busyValue?: T | null;
-  disabled?: boolean;
-  onSelect: (value: T) => void;
-  toneFor: (value: T) => Tone;
-}) {
-  return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
-        {label}
-      </p>
-      <div className="mt-2.5 flex flex-wrap gap-2">
-        {options.map((option) => {
-          const isActive = activeValue === option;
-          const isBusy = busyValue === option;
-          return (
-            <button
-              key={option}
-              type="button"
-              disabled={disabled || isActive}
-              onClick={() => onSelect(option)}
-              className={`cursor-pointer rounded-xl border px-3.5 py-2 text-sm font-semibold capitalize transition disabled:cursor-not-allowed disabled:opacity-70 ${
-                isActive
-                  ? `border-transparent bg-white text-primary-dark ring-2 ${TONE_RING[toneFor(option)]}`
-                  : "border-white/25 bg-white/10 text-white hover:border-white/45 hover:bg-white/20"
-              }`}
-            >
-              {isBusy ? "Updating..." : option}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 export default function ShopDetails() {
@@ -304,11 +159,7 @@ export default function ShopDetails() {
   };
 
   if (shopLoading) {
-    return (
-      <div className="rounded-2xl border border-primary/10 bg-white p-6 text-sm text-primary/70">
-        Loading shop details...
-      </div>
-    );
+    return <ShopDetailsSkeleton />;
   }
 
   if (requestError || !currentShop) {
@@ -747,53 +598,47 @@ export default function ShopDetails() {
             {revenueHistoryRequestError}
           </p>
         ) : revenueHistory?.rows?.length ? (
-          <div className="overflow-hidden rounded-2xl border border-primary/10 bg-white">
-            <table className="min-w-full text-sm">
-              <thead className="bg-primary/5 text-left text-xs uppercase tracking-[0.14em] text-primary/65">
-                <tr>
-                  <th className="px-4 py-3">Order</th>
-                  <th className="px-4 py-3">Sub-order</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {revenueHistory.rows.map((row) => (
-                  <tr
-                    key={row.subOrderId}
-                    className="border-t border-primary/10 align-top"
-                  >
-                    <td className="px-4 py-3 font-semibold text-primary">
-                      {row.orderId}
-                    </td>
-                    <td className="px-4 py-3 text-primary/75">
-                      {row.subOrderId}
-                    </td>
-                    <td className="px-4 py-3 text-primary/75">
-                      {statusLabel(row.status)}
-                    </td>
-                    <td className="px-4 py-3 text-primary/75">
-                      {formatMoney(row.amount, revenue?.currency || "NGN")}
-                    </td>
-                    <td className="px-4 py-3 text-primary/75">
-                      {formatDate(row.updatedAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <>
+            {/* Desktop / tablet table */}
+            <div className="hidden overflow-hidden rounded-2xl border border-primary/10 bg-white sm:block">
+              <RevenueTable
+                rows={revenueHistory.rows}
+                currency={revenue?.currency || "NGN"}
+              />
 
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-primary/10 px-4 py-3 text-xs text-primary/60">
-              <p>
-                Showing {revenueHistory.rows.length} of {revenueHistory.total}{" "}
-                rows
-              </p>
-              <p>
-                Page size {revenueHistory.limit} · offset {revenueHistory.skip}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-primary/10 px-4 py-3 text-xs text-primary/60">
+                <p>
+                  Showing {revenueHistory.rows.length} of {revenueHistory.total}{" "}
+                  rows
+                </p>
+                <p>
+                  Page size {revenueHistory.limit} · offset{" "}
+                  {revenueHistory.skip}
+                </p>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile tiles */}
+            <div className="space-y-3 sm:hidden">
+              {revenueHistory.rows.map((row) => (
+                <RevenueTile
+                  key={row.subOrderId}
+                  row={row}
+                  currency={revenue?.currency || "NGN"}
+                />
+              ))}
+
+              <div className="flex items-center justify-between px-1 pt-1 text-xs text-primary/60">
+                <p>
+                  {revenueHistory.rows.length} of {revenueHistory.total}
+                </p>
+                <p>
+                  Page{" "}
+                  {Math.floor(revenueHistory.skip / revenueHistory.limit) + 1}
+                </p>
+              </div>
+            </div>
+          </>
         ) : (
           <p className="text-sm text-primary/65">
             No payout revenue rows found for this shop.

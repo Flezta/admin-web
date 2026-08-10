@@ -5,7 +5,7 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import { auth, googleProvider } from "../../../lib/firebase";
+import { auth, googleProvider } from "../../../lib/utils/firebase";
 import { useLazyGetCurrentUserQuery } from "../../../store/api/authApi";
 import type { User } from "../../../types/user";
 import { AuthContext } from "./auth-context";
