@@ -120,7 +120,10 @@ export interface ShopAnalyticsPayouts {
   totalPaidNetAmount: number;
   totalFailedNetAmount: number;
   totalOnHoldNetAmount: number;
-  statusCounts: Record<"PENDING" | "READY" | "PROCESSING" | "PAID" | "FAILED" | "ON_HOLD", number>;
+  statusCounts: Record<
+    "PENDING" | "READY" | "PROCESSING" | "PAID" | "FAILED" | "ON_HOLD",
+    number
+  >;
 }
 
 export interface ShopAnalytics {

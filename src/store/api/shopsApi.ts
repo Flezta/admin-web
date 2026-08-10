@@ -39,17 +39,13 @@ export const shopsApi = baseApi.injectEndpoints({
       query: (shopId) => `/shops/${shopId}/analytics`,
       transformResponse: unwrapApiData<ShopAnalytics>,
       transformErrorResponse: normalizeApiError,
-      providesTags: (_result, _error, shopId) => [
-        { type: "Shop", id: shopId },
-      ],
+      providesTags: (_result, _error, shopId) => [{ type: "Shop", id: shopId }],
     }),
     getShopBankDetails: builder.query<ShopBankDetails | null, string>({
       query: (shopId) => `/payments/admin/shops/${shopId}/bank-details`,
       transformResponse: unwrapApiData<ShopBankDetails | null>,
       transformErrorResponse: normalizeApiError,
-      providesTags: (_result, _error, shopId) => [
-        { type: "Shop", id: shopId },
-      ],
+      providesTags: (_result, _error, shopId) => [{ type: "Shop", id: shopId }],
     }),
     getShopPayoutRevenueHistory: builder.query<
       ShopPayoutRevenueHistory,
@@ -69,7 +65,10 @@ export const shopsApi = baseApi.injectEndpoints({
         { type: "Shop", id: arg.shopId },
       ],
     }),
-    updateShopStatus: builder.mutation<Shop, { shopId: string; status: ShopStatus }>({
+    updateShopStatus: builder.mutation<
+      Shop,
+      { shopId: string; status: ShopStatus }
+    >({
       query: ({ shopId, status }) => ({
         url: `/shops/${shopId}/status`,
         method: "PATCH",

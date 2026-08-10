@@ -43,7 +43,10 @@ export default function ShopsTableView({ shops }: ShopsTableViewProps) {
         </thead>
         <tbody>
           {shops.map((shop) => (
-            <tr key={shop.shopId} className="border-t border-primary/10 align-top">
+            <tr
+              key={shop.shopId}
+              className="border-t border-primary/10 align-top"
+            >
               <td className="px-4 py-3">
                 <p className="font-semibold text-primary">{shop.name || "-"}</p>
                 <p className="text-primary/70">{shop.shopId}</p>

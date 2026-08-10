@@ -30,7 +30,12 @@ export default function ShopsList() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ShopStatusFilter>("all");
 
-  const { data: shops = [], isLoading, isFetching, error } = useGetShopsQuery({
+  const {
+    data: shops = [],
+    isLoading,
+    isFetching,
+    error,
+  } = useGetShopsQuery({
     status,
   });
 
@@ -44,7 +49,9 @@ export default function ShopsList() {
     <section className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">Shops</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-primary">
+            Shops
+          </h1>
           <p className="mt-1 text-sm text-primary/70">
             Review registered shops and monitor their status.
           </p>
