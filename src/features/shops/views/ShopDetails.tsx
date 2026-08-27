@@ -73,7 +73,6 @@ export default function ShopDetails() {
     isFetching: shopFetching,
     error: shopError,
   } = useGetShopByShopIdQuery(shopId || "", { skip: !shopId });
-
   const {
     data: analytics,
     isLoading: analyticsLoading,
@@ -97,6 +96,7 @@ export default function ShopDetails() {
     isFetching: bankDetailsFetching,
     error: bankDetailsError,
   } = useGetShopBankDetailsQuery(shopId || "", { skip: !shopId });
+  // get shop owner user
 
   const [updateShopStatus, { isLoading: updatingStatus }] =
     useUpdateShopStatusMutation();
@@ -115,6 +115,7 @@ export default function ShopDetails() {
   const revenueHistoryRequestError = getErrorMessage(revenueHistoryError);
 
   const currentShop = shop as Shop | undefined;
+
   const currentAnalytics = analytics as ShopAnalytics | undefined;
 
   const busy = updatingStatus || updatingVerification;
@@ -200,10 +201,16 @@ export default function ShopDetails() {
               </Badge>
               <Badge tone={verificationTone(verificationStatus)}>
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <p className="text-[8px] font-semibold uppercase tracking-[0.08em] text-primary/60">
+                  <p
+                    className={`text-[8px] font-semibold uppercase tracking-[0.08em] text-primary/60 ${verificationStatus === "verified" ? "text-success" : verificationStatus === "pending" ? "text-warning" : verificationStatus === "rejected" ? "text-danger" : "text-primary/60"}`}
+                  >
                     verification
                   </p>
-                  {verificationStatus || "unverified"}
+                  <p
+                    className={`text-sm font-semibold ${verificationStatus === "verified" ? "text-success" : verificationStatus === "pending" ? "text-warning" : verificationStatus === "rejected" ? "text-danger" : "text-blue-700"}`}
+                  >
+                    {verificationStatus || "unverified"}
+                  </p>
                 </div>
               </Badge>
             </div>
@@ -299,7 +306,7 @@ export default function ShopDetails() {
           </div>
         </div>
 
-        <div className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2">
+        <div className="grid gap-6 p-4 sm:p-5 md:grid-cols-2">
           <ControlGroup<ShopStatus>
             label="Shop Status"
             options={["pending", "active", "suspended", "rejected"]}

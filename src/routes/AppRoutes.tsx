@@ -15,6 +15,8 @@ import UsersList from "../features/users/views/UsersList";
 import UserDetails from "../features/users/views/UserDetails";
 import ShopsList from "../features/shops/views/ShopsList";
 import ShopDetails from "../features/shops/views/ShopDetails";
+import ProductsList from "../features/products/views/ProductsList";
+import ProductDetails from "../features/products/views/ProductDetails";
 
 export const appRoutes = createBrowserRouter([
   {
@@ -39,6 +41,8 @@ export const appRoutes = createBrowserRouter([
               { path: "users/:uid", element: <UserDetails /> },
               { path: "shops", element: <ShopsList /> },
               { path: "shops/:shopId", element: <ShopDetails /> },
+              { path: "products", element: <ProductsList /> },
+              { path: "products/:productId", element: <ProductDetails /> },
             ],
           },
         ],

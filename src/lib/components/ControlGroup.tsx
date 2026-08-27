@@ -23,7 +23,7 @@ function ControlGroup<T extends string>({
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
         {label}
       </p>
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="mt-2.5 grid grid-cols-2 gap-2.5 ">
         {options.map((option) => {
           const isActive = activeValue === option;
           const isBusy = busyValue === option;

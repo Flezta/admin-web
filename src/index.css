@@ -12,6 +12,11 @@
   --color-secondary-dark: #a25205;
   --color-surface: #f6fbf9;
   --color-ink: #052319;
+  --color-ink-light: #4b5c54;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-failure: #6c757d;
 
   --font-sans: "Sora", "Avenir Next", "Segoe UI", sans-serif;
 }

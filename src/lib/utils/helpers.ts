@@ -21,4 +21,33 @@ function statusLabel(status?: string) {
   return status.replaceAll("_", " ").toLowerCase();
 }
 
-export { formatDate, formatMoney, getErrorMessage ,statusLabel };
+function formatElapsed(value?: string) {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "-";
+
+  const minutes = Math.max(
+    0,
+    Math.floor((Date.now() - parsed.getTime()) / 60000),
+  );
+
+  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
+  return `${Math.floor(minutes / 1440)}d`;
+}
+
+function elapsedHours(value?: string) {
+  if (!value) return 0;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 0;
+  return Math.max(0, (Date.now() - parsed.getTime()) / 3600000);
+}
+
+export {
+  formatDate,
+  formatMoney,
+  getErrorMessage,
+  statusLabel,
+  formatElapsed,
+  elapsedHours,
+};

@@ -9,6 +9,7 @@ export default function RootLayout() {
         { name: "Dashboard", to: "/" },
         { name: "Users", to: "/users" },
         { name: "Shops", to: "/shops" },
+        { name: "Products", to: "/products" },
       ]}
       apiDomains={[
         { name: "Users" },
