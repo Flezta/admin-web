@@ -4,6 +4,15 @@ import { normalizeApiError, unwrapApiData } from "./responseTransformers";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    createUser: builder.mutation<
+      User,
+      { firstName: string; lastName: string; email: string }
+    >({
+      query: (body) => ({ url: "/users", method: "POST", body }),
+      transformResponse: unwrapApiData<User>,
+      transformErrorResponse: normalizeApiError,
+      invalidatesTags: ["User", "Users"],
+    }),
     getCurrentUser: builder.query<User, void>({
       query: () => "/users/me",
       transformResponse: unwrapApiData<User>,
@@ -13,4 +22,8 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetCurrentUserQuery, useLazyGetCurrentUserQuery } = authApi;
+export const {
+  useCreateUserMutation,
+  useGetCurrentUserQuery,
+  useLazyGetCurrentUserQuery,
+} = authApi;

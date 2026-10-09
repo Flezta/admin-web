@@ -8,6 +8,14 @@ export interface AuthContextValue {
   isLoading: boolean;
   loginWithEmail: (email: string, password: string) => Promise<User>;
   loginWithGoogle: () => Promise<User>;
+  signUpWithEmail: (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+  ) => Promise<User>;
+  signUpWithGoogle: (firstName?: string, lastName?: string) => Promise<User>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<User>;
 }

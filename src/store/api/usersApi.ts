@@ -175,12 +175,12 @@ export const usersApi = baseApi.injectEndpoints({
     }),
     assignUserAdminRole: builder.mutation<
       AdminRoleAssignmentResult,
-      { uid: string; role: AdminRole }
+      { uid: string; role: AdminRole; hubId?: string }
     >({
-      query: ({ uid, role }) => ({
+      query: ({ uid, role, hubId }) => ({
         url: `/users/${uid}/admin-role`,
         method: "PATCH",
-        body: { role },
+        body: { role, hubId },
       }),
       transformResponse: unwrapApiData<AdminRoleAssignmentResult>,
       transformErrorResponse: normalizeApiError,

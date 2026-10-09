@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ConfirmActionModal from "../../../components/ConfirmActionModal";
 import BackLinkButton from "../../users/components/BackLinkButton";
 import UserTile from "../../users/components/UserTile";
@@ -183,6 +183,24 @@ export default function ShopDetails() {
   return (
     <section className="space-y-5">
       <BackLinkButton to="/shops" label="Back to shops" />
+
+      <nav
+        aria-label="Shop payments"
+        className="flex flex-wrap gap-4 text-sm font-semibold"
+      >
+        <Link
+          to={`/payments?tab=eligible&shopId=${encodeURIComponent(currentShop.shopId)}`}
+          className="underline"
+        >
+          Eligible vendor payouts
+        </Link>
+        <Link
+          to={`/payments?tab=vendors&shopId=${encodeURIComponent(currentShop.shopId)}`}
+          className="underline"
+        >
+          Completed payment history
+        </Link>
+      </nav>
 
       <div className="rounded-3xl border border-primary/10 bg-white p-4 shadow-[0_14px_30px_-24px_rgba(0,54,37,0.45)] sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -8,7 +8,6 @@ interface UserRoleActionsCardProps {
   errorMessage?: string | null;
   successMessage?: string | null;
   onSetAdmin: () => void;
-  onSetHubAdmin: () => void;
   onSetSuperAdmin: () => void;
   onSetNone: () => void;
 }
@@ -47,7 +46,6 @@ export default function UserRoleActionsCard({
   errorMessage,
   successMessage,
   onSetAdmin,
-  onSetHubAdmin,
   onSetSuperAdmin,
   onSetNone,
 }: UserRoleActionsCardProps) {
@@ -66,7 +64,6 @@ export default function UserRoleActionsCard({
     if (!confirmRole) return;
 
     if (confirmRole === "ADMIN") onSetAdmin();
-    if (confirmRole === "HUB_ADMIN") onSetHubAdmin();
     if (confirmRole === "SUPER_ADMIN") onSetSuperAdmin();
     if (confirmRole === "NONE") onSetNone();
 
@@ -75,7 +72,9 @@ export default function UserRoleActionsCard({
 
   return (
     <section className="rounded-2xl border border-primary/10 bg-white p-4">
-      <h2 className="text-base font-semibold text-primary">Admin Actions</h2>
+      <h2 className="text-base font-semibold text-primary">
+        Marketplace roles
+      </h2>
       <p className="mt-1 text-sm text-primary/65">
         Assign exactly one elevated role for this user at a time.
       </p>
@@ -86,7 +85,9 @@ export default function UserRoleActionsCard({
       <div className="mt-4 flex flex-col gap-2 md:flex-row md:flex-wrap">
         <button
           type="button"
-          disabled={busy || activeRole === "ADMIN"}
+          disabled={
+            busy || activeRole === "HUB_ADMIN" || activeRole === "ADMIN"
+          }
           onClick={() => setConfirmRole("ADMIN")}
           className={`rounded-lg border cursor-pointer px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
             activeRole === "ADMIN"
@@ -102,25 +103,9 @@ export default function UserRoleActionsCard({
 
         <button
           type="button"
-          disabled={busy || activeRole === "HUB_ADMIN"}
-          onClick={() => setConfirmRole("HUB_ADMIN")}
-          className={`rounded-lg border cursor-pointer px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-            activeRole === "HUB_ADMIN"
-              ? "border-primary bg-primary text-white"
-              : "border-primary/20 bg-white text-primary hover:bg-primary/5"
-          }`}
-        >
-          <span className="inline-flex items-center gap-2">
-            {pendingRole === "HUB_ADMIN" && busy ? <Spinner /> : null}
-            {pendingRole === "HUB_ADMIN" && busy
-              ? "Setting..."
-              : "Set as Hub Admin"}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          disabled={busy || activeRole === "SUPER_ADMIN"}
+          disabled={
+            busy || activeRole === "HUB_ADMIN" || activeRole === "SUPER_ADMIN"
+          }
           onClick={() => setConfirmRole("SUPER_ADMIN")}
           className={`rounded-lg border cursor-pointer px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
             activeRole === "SUPER_ADMIN"
@@ -138,7 +123,7 @@ export default function UserRoleActionsCard({
 
         <button
           type="button"
-          disabled={busy || activeRole === null}
+          disabled={busy || activeRole === "HUB_ADMIN" || activeRole === null}
           onClick={() => setConfirmRole("NONE")}
           className="rounded-lg border border-primary/20 bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -150,6 +135,12 @@ export default function UserRoleActionsCard({
           </span>
         </button>
       </div>
+
+      {activeRole === "HUB_ADMIN" && (
+        <p className="mt-3 text-sm text-amber-800">
+          Revoke hub access before assigning a marketplace role.
+        </p>
+      )}
 
       {errorMessage && (
         <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

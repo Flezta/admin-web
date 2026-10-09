@@ -53,6 +53,7 @@ export interface User {
   isBlogAuthor: boolean;
   isHubAdmin?: boolean;
   isSuperAdmin?: boolean;
+  hubId?: string;
 
   email: string;
   emailVerified?: boolean;

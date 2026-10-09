@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   type AdminRole,
   useAssignUserAdminRoleMutation,
@@ -13,8 +13,11 @@ import UserQuickActions from "../components/UserQuickActions";
 import UserRoleActionsCard from "../components/UserRoleActionsCard";
 import UserShopLinkCard from "../components/UserShopLinkCard";
 import { getUserDisplayName } from "../utils/userFormat";
+import { useAuth } from "../../auth/context/use-auth";
+import HubAccessPanel from "../../hubs/components/HubAccessPanel";
 
 export default function UserDetails() {
+  const { user: actor } = useAuth();
   const { uid } = useParams<{ uid: string }>();
   const {
     data: user,
@@ -174,21 +177,36 @@ export default function UserDetails() {
 
       <UserCommercePreviewCard uid={user.uid} />
 
+      <section className="border-y border-primary/15 py-4">
+        <h2 className="text-base font-semibold text-primary">Payments</h2>
+        <Link
+          to={`/payments?tab=buyers&buyerId=${encodeURIComponent(user._id)}`}
+          className="mt-2 inline-block text-sm font-semibold underline"
+        >
+          Buyer payment history
+        </Link>
+      </section>
+
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <UserRoleActionsCard
-          activeRole={activeRole}
-          busy={busy}
-          pendingRole={pendingRole}
-          errorMessage={roleActionError}
-          successMessage={roleActionSuccess}
-          onSetAdmin={() => runRoleUpdate("ADMIN")}
-          onSetHubAdmin={() => runRoleUpdate("HUB_ADMIN")}
-          onSetSuperAdmin={() => runRoleUpdate("SUPER_ADMIN")}
-          onSetNone={() => runRoleUpdate("NONE")}
-        />
+        {actor?.isSuperAdmin && (
+          <UserRoleActionsCard
+            key={`${user.uid}:${user.hubId || ""}`}
+            activeRole={activeRole}
+            busy={busy}
+            pendingRole={pendingRole}
+            errorMessage={roleActionError}
+            successMessage={roleActionSuccess}
+            onSetAdmin={() => runRoleUpdate("ADMIN")}
+            onSetSuperAdmin={() => runRoleUpdate("SUPER_ADMIN")}
+            onSetNone={() => runRoleUpdate("NONE")}
+          />
+        )}
 
         <UserShopLinkCard shopId={user.shopId} />
       </div>
+      {actor?.isSuperAdmin && (
+        <HubAccessPanel key={`${user.uid}:${user.hubId || ""}`} user={user} />
+      )}
     </section>
   );
 }

@@ -1,40 +1,57 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/use-auth";
 import logo from "../../../assets/Logo2.png";
+import GoogleMark from "../../../lib/icons/GoogleMark";
 
 import { getHomeRoute } from "../utils";
 
-function GoogleMark() {
-  return (
-    <svg viewBox="0 0 18 18" aria-hidden="true" className="h-[18px] w-[18px]">
-      <path
-        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.56 2.7-3.86 2.7-6.62Z"
-        fill="#4285F4"
-      />
-      <path
-        d="M9 18c2.43 0 4.46-.8 5.94-2.18l-2.9-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.31-1.58-5.02-3.7H.98v2.34A8.99 8.99 0 0 0 9 18Z"
-        fill="#34A853"
-      />
-      <path
-        d="M3.98 10.72A5.42 5.42 0 0 1 3.7 9c0-.6.1-1.18.28-1.72V4.94H.98A8.99 8.99 0 0 0 0 9c0 1.45.35 2.83.98 4.06l3-2.34Z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M9 3.58c1.32 0 2.52.45 3.46 1.34l2.6-2.6C13.46.85 11.43 0 9 0 .48 0 0 9 0 9s.35-2.83.98-4.06l3 2.34c.71-2.12 2.68-3.7 5.02-3.7Z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
-
 export default function Login() {
-  const { loginWithEmail, loginWithGoogle } = useAuth();
+  const { loginWithEmail, loginWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  const changeResetMode = (enabled: boolean) => {
+    setResetMode(enabled);
+    setError(null);
+    setResetSent(false);
+    setPassword("");
+    setShowPassword(false);
+  };
+
+  const handlePasswordReset = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setResetSent(false);
+    setSubmitting(true);
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+    } catch (resetError) {
+      if (
+        resetError instanceof FirebaseError &&
+        resetError.code === "auth/user-not-found"
+      ) {
+        setResetSent(true);
+      } else {
+        setError(
+          resetError instanceof FirebaseError &&
+            resetError.code === "auth/too-many-requests"
+            ? "Too many requests. Please try again later."
+            : "Unable to send a reset email. Please try again.",
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +60,46 @@ export default function Login() {
     try {
       const loggedInUser = await loginWithEmail(email, password);
       navigate(getHomeRoute(loggedInUser));
-    } catch {
-      setError("Invalid email or password");
+    } catch (loginError) {
+      if (!(loginError instanceof FirebaseError)) {
+        setError("Unable to sign in. Please try again.");
+      } else {
+        switch (loginError.code) {
+          case "auth/invalid-email":
+          case "auth/missing-email":
+            setError("Please enter a valid email address.");
+            break;
+          case "auth/missing-password":
+            setError("Please enter your password.");
+            break;
+          case "auth/user-disabled":
+            setError("Your account has been disabled. Please contact support.");
+            break;
+          case "auth/too-many-requests":
+            setError(
+              "Too many sign-in attempts. Please try again later or reset your password.",
+            );
+            break;
+          case "auth/network-request-failed":
+            setError(
+              "Unable to connect. Check your internet connection and try again.",
+            );
+            break;
+          case "auth/operation-not-allowed":
+            setError(
+              "Email and password sign-in is unavailable. Please contact support.",
+            );
+            break;
+          case "auth/invalid-credential":
+          case "auth/invalid-login-credentials":
+          case "auth/wrong-password":
+          case "auth/user-not-found":
+            setError("Invalid email or password.");
+            break;
+          default:
+            setError("Unable to sign in. Please try again.");
+        }
+      }
     } finally {
       setSubmitting(false);
     }
@@ -65,14 +120,20 @@ export default function Login() {
       <div className="mb-7 text-center">
         <img src={logo} alt="Flezta" className="mx-auto h-16 w-auto" />
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-primary sm:text-3xl">
-          Welcome back
+          {resetMode ? "Reset password" : "Welcome back"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-primary/70">
-          Sign in to manage the Flezta admin workspace.
+          {resetMode
+            ? "Enter your account email to receive a password reset link."
+            : "Sign in to manage the Flezta admin workspace."}
         </p>
       </div>
 
-      <form onSubmit={handleEmailLogin} className="space-y-4" noValidate>
+      <form
+        onSubmit={resetMode ? handlePasswordReset : handleEmailLogin}
+        className="space-y-4"
+        noValidate={!resetMode}
+      >
         <div>
           <label
             htmlFor="email"
@@ -84,7 +145,12 @@ export default function Login() {
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setResetSent(false);
+              setError(null);
+            }}
+            disabled={submitting}
             placeholder="you@flezta.com"
             className="w-full rounded-xl border border-primary/20 bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
             autoComplete="email"
@@ -92,55 +158,137 @@ export default function Login() {
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-primary/75"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            className="w-full rounded-xl border border-primary/20 bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-            autoComplete="current-password"
-            required
-          />
-        </div>
+        {!resetMode && (
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-primary/75"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full rounded-xl border border-primary/20 bg-white py-3 pl-4 pr-12 text-sm text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-controls="password"
+                title={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-xl text-primary/60 transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                  {showPassword && <path d="m3 3 18 18" />}
+                </svg>
+              </button>
+            </div>
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={() => changeResetMode(true)}
+                className="text-sm font-semibold text-primary hover:underline disabled:opacity-60"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
             {error}
+          </p>
+        )}
+
+        {resetMode && resetSent && (
+          <p
+            role="status"
+            className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary"
+          >
+            If an account exists for this email, you will receive a password
+            reset link. Check your inbox and spam folder.
           </p>
         )}
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || (resetMode && resetSent)}
           className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Signing in..." : "Sign in"}
+          {resetMode
+            ? submitting
+              ? "Sending..."
+              : resetSent
+                ? "Reset email requested"
+                : "Send reset link"
+            : submitting
+              ? "Signing in..."
+              : "Sign in"}
         </button>
 
-        <div className="relative py-1 text-center">
-          <span className="relative z-10 bg-white px-3 text-xs uppercase tracking-[0.14em] text-primary/45">
-            Or
-          </span>
-          <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-primary/15" />
-        </div>
+        {resetMode ? (
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={() => changeResetMode(false)}
+            className="w-full py-2 text-sm font-semibold text-primary hover:underline disabled:opacity-60"
+          >
+            Back to sign in
+          </button>
+        ) : (
+          <>
+            <div className="relative py-1 text-center">
+              <span className="relative z-10 bg-white px-3 text-xs uppercase tracking-[0.14em] text-primary/45">
+                Or
+              </span>
+              <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-primary/15" />
+            </div>
 
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:border-primary/35 hover:bg-primary/5"
-        >
-          <GoogleMark />
-          Continue with Google
-        </button>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:border-primary/35 hover:bg-primary/5"
+            >
+              <GoogleMark />
+              Continue with Google
+            </button>
+          </>
+        )}
       </form>
+      {!resetMode && (
+        <p className="mt-4 text-center text-sm text-primary/70">
+          Need an account?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-primary hover:underline"
+          >
+            Create account
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
